@@ -145,7 +145,7 @@ export class Deployinator extends LitElement {
     }
 
     updatePosition(position) {
-        if (position.coords.accuracy > 100) {
+        if (position.coords.accuracy > 20) {
             console.log('Low accuracy position', position)
             this.position = undefined
             return

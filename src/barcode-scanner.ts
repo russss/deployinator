@@ -1,5 +1,5 @@
 import { LitElement, css, html } from 'lit'
-import { customElement, property } from 'lit/decorators.js'
+import { customElement } from 'lit/decorators.js'
 import Quagga from '@ericblade/quagga2'
 
 @customElement('barcode-scanner')
@@ -57,7 +57,11 @@ export class BarcodeScanner extends LitElement {
         this.dispatchEvent(new CustomEvent('scanned', { detail: { code: data.codeResult.code } }))
     }
 
-    static styles = css``
+    static styles = css`
+        #video {
+            width: 100%;
+        }
+    `
 }
 
 declare global {

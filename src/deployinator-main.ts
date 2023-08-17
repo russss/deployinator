@@ -56,24 +56,36 @@ export class Deployinator extends LitElement {
             return html`<div>Scanned. Serial: ${this.serial}. Waiting for geolocation...</div>`
         } else if (this.state == State.Confirm) {
             let info = null
-            let submitform = null
+            let submitForm = null
             if (this.itemData) {
-                info = html` <div>
-                    <p>Device: ${this.itemData.name}</p>
-                </div>`
+                info = html` <tr>
+                        <td>Device</td>
+                        <td>${this.itemData.name}</td>
+                    </tr>
+                    <tr>
+                        <td>Model</td>
+                        <td>${this.itemData.device_type.model}</td>
+                    </tr>`
 
-                submitform = html`
+                submitForm = html`
                     <form @submit=${this.markDeployed}>
                         <button type="submit">Mark as deployed</button>
                     </form>
                 `
             }
             return html`
-                <p>
-                    Scanned. Serial: ${this.serial}. Position: ${this.position.latitude},
-                    ${this.position.longitude}
-                </p>
-                ${info} ${submitform}
+                <table>
+                    <tr>
+                        <td>Serial</td>
+                        <td>${this.serial}</td>
+                    </tr>
+                    <tr>
+                        <td>Position</td>
+                        <td>${this.position.latitude}, ${this.position.longitude}</td>
+                    </tr>
+                    ${info}
+                </table>
+                ${submitForm}
             `
         }
     }

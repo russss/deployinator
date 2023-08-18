@@ -46,6 +46,7 @@ export class Deployinator extends LitElement {
         if (this.state == State.Login) {
             return html`
                 ${error}
+                <p>Please enter your Netbox login (I promise this is sent directly to Netbox):</p>
                 <netbox-login @loginSuccess=${this.loginSuccess}></netbox-login>
             `
         } else if (this.state == State.Scan) {
@@ -154,7 +155,7 @@ export class Deployinator extends LitElement {
             .then((response) => response.json())
             .then((data) => {
                 if (data.count == 0) {
-                    this.error = 'Item not found in Netbox'
+                    this.error = `Item ${this.serial} not found in Netbox - barcode maybe misread`
                     this.state = State.Scan
                     return
                 } else if (data.count > 1) {

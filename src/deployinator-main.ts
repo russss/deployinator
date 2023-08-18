@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit'
+import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 
 enum State {
@@ -34,6 +34,7 @@ export class Deployinator extends LitElement {
         if (this.netboxToken) {
             this.state = State.Scan
         }
+        this.beep = new Audio('/piep.wav')
     }
 
     render() {
@@ -83,6 +84,10 @@ export class Deployinator extends LitElement {
                         <td>Position</td>
                         <td>${this.position.latitude}, ${this.position.longitude}</td>
                     </tr>
+                    <tr>
+                        <td>Accuracy</td>
+                        <td>${this.position.accuracy}m</td>
+                    </tr>
                     ${info}
                 </table>
                 ${submitForm}
@@ -112,11 +117,18 @@ export class Deployinator extends LitElement {
         this.state = State.Scan
     }
 
+    logout() {
+        localStorage.removeItem('netboxToken')
+        this.netboxToken = undefined
+        this.state = State.Login
+    }
+
     newBarcode(event: any) {
         const data = event.detail
         if (!serial_number_regex.test(data.code)) {
             return
         }
+        this.beep.play()
         if (!this.position) {
             this.state = State.WaitingForGeolocation
         } else {
@@ -132,10 +144,20 @@ export class Deployinator extends LitElement {
                 Accept: 'application/json',
             },
         })
+            .then((response) => {
+                if (response.status == 403) {
+                    this.logout()
+                    return Promise.reject('403')
+                }
+                return response
+            })
             .then((response) => response.json())
             .then((data) => {
-                if (data.results.length != 1) {
-                    console.log('Unexpected number of devices found')
+                if (data.count == 0) {
+                    this.error = 'Item not found in Netbox'
+                    this.state = State.Scan
+                    return
+                } else if (data.count > 1) {
                     this.error = 'Unexpected number of devices found'
                     this.state = State.Scan
                     return
@@ -145,7 +167,7 @@ export class Deployinator extends LitElement {
     }
 
     updatePosition(position) {
-        if (position.coords.accuracy > 20) {
+        if (position.coords.accuracy > 20 && import.meta.env.PROD) {
             console.log('Low accuracy position', position)
             this.position = undefined
             return
@@ -179,6 +201,13 @@ export class Deployinator extends LitElement {
             this.state = State.Scan
         })
     }
+
+    static styles = css`
+        .error {
+            padding: 5px;
+            background-color: #ffaaaa;
+        }
+    `
 }
 
 declare global {
